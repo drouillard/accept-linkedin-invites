@@ -2,6 +2,7 @@ require('colors');
 var chai = require("chai");
 var chaiAsPromised = require("chai-as-promised");
 var userInfo = require("./linkedin_user_info.json");
+var PromiseSimple = require('promise-simple');
 
 var email =  userInfo.email;
 var password = userInfo.password;
@@ -31,6 +32,32 @@ wd.addPromiseChainMethod(
 
 var browser = wd.promiseChainRemote();
 
+
+
+// enables chai assertion chaining
+chaiAsPromised.transferPromiseness = wd.transferPromiseness;
+
+
+function acceptAllInvitations() {
+  var promise = PromiseSimple.defer();
+  
+  browser.waitForElementByCss(".bulk-chk" , 5000)
+  .elementByCss('.bulk-chk')
+  .click()
+  .elementByCss("li[bulk-action='bulkInvitationAccept'] a")
+  .click()
+  .resolve(promise)
+  
+  function resolvePromise(){
+    promise.resolve('OK');
+  }
+
+
+  return promise;
+}
+
+wd.addPromiseChainMethod('acceptAllInvitations', acceptAllInvitations);
+
 // optional extra logging
 browser.on('status', function(info) {
   console.log(info.cyan);
@@ -48,7 +75,15 @@ browser
   .elementById('session_key-login').type(email)
   .elementById('session_password-login').type(password)
   .elementById('btn-primary')
+  .click()
+  .waitForElementByCss(".feed-nhome" , 5000)
+  .get("https://www.linkedin.com/inbox/#invitations")
+  .acceptAllInvitations()
   .done();
+
+  //  .fin(function() { return browser.quit(); })
+
+  
   // .title()
   //   .should.become('WD Tests')
   // .elementById('i am a link')
