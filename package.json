@@ -1,0 +1,23 @@
+{
+  "name": "accept-linkedin-connections",
+  "version": "0.0.1",
+  "description": "Automatically accept linkedin invitations through browser automation ",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:drouillard/accept-linkedin-invites.git"
+  },
+  "keywords": [
+    "linkedin",
+    "webdriver"
+  ],
+  "author": "Douglas Drouillard",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/drouillard/accept-linkedin-invites/issues"
+  },
+  "homepage": "https://github.com/drouillard/accept-linkedin-invites"
+}
