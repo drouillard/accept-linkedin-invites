@@ -1,62 +1,15 @@
 require('colors');
-var chai = require("chai");
-var chaiAsPromised = require("chai-as-promised");
+
+var wd = require('wd');
 var userInfo = require("./linkedin_user_info.json");
 var PromiseSimple = require('promise-simple');
 
 var email =  userInfo.email;
 var password = userInfo.password;
 
-chai.use(chaiAsPromised);
-chai.should();
-
-var wd;
-try {
-  wd = require('wd');
-} catch( err ) {
-  wd = require('../../lib/main');
-}
-
-// enables chai assertion chaining
-chaiAsPromised.transferPromiseness = wd.transferPromiseness;
-
-// adding custom promise chain method
-wd.addPromiseChainMethod(
-  'elementByCssSelectorWhenReady',
-  function(selector, timeout) {
-    return this
-      .waitForElementByCssSelector(selector, timeout)
-      .elementByCssSelector(selector);
-  }
-);
-
 var browser = wd.promiseChainRemote();
 
-
-
-// enables chai assertion chaining
-chaiAsPromised.transferPromiseness = wd.transferPromiseness;
-
-
-function acceptAllInvitations() {
-  var promise = PromiseSimple.defer();
-  
-  browser.waitForElementByCss(".bulk-chk" , 5000)
-  .elementByCss('.bulk-chk')
-  .click()
-  .elementByCss("li[bulk-action='bulkInvitationAccept'] a")
-  .click()
-  .resolve(promise)
-  
-  function resolvePromise(){
-    promise.resolve('OK');
-  }
-
-
-  return promise;
-}
-
-wd.addPromiseChainMethod('acceptAllInvitations', acceptAllInvitations);
+wd.addPromiseChainMethod('arrangeAcceptingOfInvitations', arrangeAcceptingOfInvitations);
 
 // optional extra logging
 browser.on('status', function(info) {
@@ -76,22 +29,60 @@ browser
   .elementById('session_password-login').type(password)
   .elementById('btn-primary')
   .click()
-  .waitForElementByCss(".feed-nhome" , 5000)
+  .waitForElementByCss("#feed-nhome" , 10000)
   .get("https://www.linkedin.com/inbox/#invitations")
-  .acceptAllInvitations()
-  .done();
+  .waitForElementByCss("#invitations" , 10000)
+  .arrangeAcceptingOfInvitations()
+  .fin(function() { return browser.quit(); })
 
-  //  .fin(function() { return browser.quit(); })
+
+
+function arrangeAcceptingOfInvitations(){
+  var promise = PromiseSimple.defer();
+  
+  browser.eval("document.getElementById('invitations').getAttribute('data-count')", function(err,value){
+    var numberOfInvites = parseInt(value);
+    
+    if(numberOfInvites){ return resolvePromise() }
+
+    acceptInvitations(acceptInvitationCallback);
+
+    function acceptInvitationCallback(){
+      numberOfInvites = numberOfInvites - 10;
+
+      if(numberOfInvites > 0){
+        //LinkedIn accept invite API is slow. Can take up to 30 seconds.
+        //So give enough time to restart the process to avoid getting an error
+        console.log("Scheduling the acceptance of more invitations...")
+        setTimeout(function(){
+          acceptInvitations(acceptInvitationCallback); 
+         }, 30000)
+      }
+      else{
+        console.log("Invitations have all been accepted.")
+        resolvePromise();
+      }
+    }
+
+  })
+
+
+  function acceptInvitations(cb){
+    browser.get("https://www.linkedin.com/inbox/#invitations")
+    .waitForElementByCss(".bulk-chk" , 5000)
+    .elementByCss('.bulk-chk')
+    .click()
+    .elementByCss("li[bulk-action='bulkInvitationAccept'] a")
+    .click()
+    .then(cb())
+  }
 
   
-  // .title()
-  //   .should.become('WD Tests')
-  // .elementById('i am a link')
-  // .click()
-  // .eval("window.location.href")
-  //   .should.eventually.include('guinea-pig2')
-  // .back()
-  // .elementByCss('#comments').type('Bonjour!')
-  // .getValue().should.become('Bonjour!')
-  // .fin(function() { return browser.quit(); })
-  // .done();
+  function resolvePromise(){
+    promise.resolve('OK');
+  }
+
+  return promise;
+}
+
+
