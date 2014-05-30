@@ -43,7 +43,7 @@ function arrangeAcceptingOfInvitations(){
   browser.eval("document.getElementById('invitations').getAttribute('data-count')", function(err,value){
     var numberOfInvites = parseInt(value);
     
-    if(numberOfInvites){ return resolvePromise() }
+    // if(numberOfInvites === 0){ return resolvePromise() }
 
     acceptInvitations(acceptInvitationCallback);
 
@@ -74,7 +74,7 @@ function arrangeAcceptingOfInvitations(){
     .click()
     .elementByCss("li[bulk-action='bulkInvitationAccept'] a")
     .click()
-    .then(cb())
+    .then(setTimeout(cb,5000))
   }
 
   
