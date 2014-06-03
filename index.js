@@ -30,8 +30,6 @@ browser
   .elementById('btn-primary')
   .click()
   .waitForElementByCss("#feed-nhome" , 10000)
-  .get("https://www.linkedin.com/inbox/#invitations")
-  .waitForElementByCss("#invitations" , 10000)
   .arrangeAcceptingOfInvitations()
   .fin(function() { return browser.quit(); })
 
