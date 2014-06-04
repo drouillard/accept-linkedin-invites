@@ -30,6 +30,8 @@ browser
   .elementById('btn-primary')
   .click()
   .waitForElementByCss("#feed-nhome" , 10000)
+  .get("https://www.linkedin.com/inbox/#invitations")
+  .waitForElementById("invitations" , 10000)
   .arrangeAcceptingOfInvitations()
   .fin(function() { return browser.quit(); })
 
@@ -40,7 +42,7 @@ function arrangeAcceptingOfInvitations(){
   
   browser.eval("document.getElementById('invitations').getAttribute('data-count')", function(err,value){
     var numberOfInvites = parseInt(value);
-    
+    console.log("Number of invitations to accept =>", numberOfInvites)
     // if(numberOfInvites === 0){ return resolvePromise() }
 
     acceptInvitations(acceptInvitationCallback);
