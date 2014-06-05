@@ -20,4 +20,4 @@ This project is based on NodeJs and Webdriver
 ----
 ### TODO
 
-*   Combine into single script
+*   Correctly kill webdriver background process
